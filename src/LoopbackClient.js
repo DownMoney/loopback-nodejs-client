@@ -1,7 +1,14 @@
 "use strict";
 
-const rest = require('restler');
+const fetch = typeof window === 'undefined' ? require('node-fetch') : window.fetch;
 const LoopbackModel = require(__dirname + '/LoopbackModel.js');
+
+const handleErrors = (response) => {
+  if (!response.ok) {
+    throw Error(response.statusText);
+  }
+  return response.json();
+};
 
 class LoopbackClient {
   constructor(baseUrl, user, password) {
@@ -35,18 +42,15 @@ class LoopbackClient {
           password: this.password
         };
 
-        const options = {
+        return fetch(this.baseUrl + '/users/login?include=user', {
+          method: 'POST',
+          body: JSON.stringify(data),
           headers: this.headers
-        };
-
-        rest.postJson(this.baseUrl + '/users/login?include=user',
-          data, options).on('complete', (result) => {
-          if (result instanceof Error) {
-            reject(result.message);
-          } else {
+        })
+          .then(handleErrors)
+          .then(result => {
             this.token = result.id;
             resolve(this.token);
-          }
         });
       }
     });

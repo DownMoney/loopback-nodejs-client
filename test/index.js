@@ -65,7 +65,7 @@ test("token", (t) => {
     console.log('token=',token)
 
     t.equal(true,token.length > 0)
-  })
+  }).catch(console.log)
 
 })
 
@@ -124,8 +124,8 @@ test("find", (t) => {
       // return true for matched
       // return false for not matched
 
-      console.log('actualQueryObject',actualQueryObject)
-      return actualQueryObject.filter.where.name == 'ido4pro' ? true : false  ;
+      console.log('actualQueryObject',actualQueryObject);
+      return actualQueryObject.filter.where.name === 'ido4pro';
     })
     .reply(200, [{"name":"ido4pro","id":idCustomer,"city":"plougonvelin"}], [ 'Vary',
       'Origin, Accept-Encoding',

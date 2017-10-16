@@ -4,8 +4,15 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var rest = require('restler');
+var fetch = typeof window === 'undefined' ? require('node-fetch') : window.fetch;
 var LoopbackModel = require(__dirname + '/LoopbackModel.js');
+
+var handleErrors = function handleErrors(response) {
+  if (!response.ok) {
+    throw Error(response.statusText);
+  }
+  return response.json();
+};
 
 var LoopbackClient = function () {
   function LoopbackClient(baseUrl, user, password) {
@@ -47,17 +54,13 @@ var LoopbackClient = function () {
             password: _this.password
           };
 
-          var options = {
+          return fetch(_this.baseUrl + '/users/login?include=user', {
+            method: 'POST',
+            body: JSON.stringify(data),
             headers: _this.headers
-          };
-
-          rest.postJson(_this.baseUrl + '/users/login?include=user', data, options).on('complete', function (result) {
-            if (result instanceof Error) {
-              reject(result.message);
-            } else {
-              _this.token = result.id;
-              resolve(_this.token);
-            }
+          }).then(handleErrors).then(function (result) {
+            _this.token = result.id;
+            resolve(_this.token);
           });
         }
       });

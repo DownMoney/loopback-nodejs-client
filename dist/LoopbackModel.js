@@ -4,7 +4,19 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var rest = require('restler');
+var fetch = typeof window === 'undefined' ? require('node-fetch') : window.fetch;
+var qs = require('qs');
+
+var handleErrors = function handleErrors(response) {
+  if (!response.ok) {
+    throw Error(response.statusText);
+  }
+  return response.json();
+};
+
+var getQueryParams = function getQueryParams(query) {
+  return query && qs.stringify(query) ? '?' + qs.stringify(query) : '';
+};
 
 var LoopbackModel = function () {
   function LoopbackModel(model, tokenClient) {
@@ -19,91 +31,36 @@ var LoopbackModel = function () {
   _createClass(LoopbackModel, [{
     key: 'get',
     value: function get(url, query) {
-      var _this = this;
-
-      return new Promise(function (resolve, reject) {
-        rest.get(url, {
-          headers: _this.headers,
-          query: query
-        }).on('complete', function (result, response) {
-          if (result instanceof Error) {
-            reject(result.message);
-          } else {
-            if (response.statusCode !== 200) {
-              reject(result);
-            } else {
-              resolve(result);
-            }
-          }
-        });
-      });
+      return fetch(url + getQueryParams(query), {
+        method: 'GET',
+        headers: this.headers
+      }).then(handleErrors);
     }
   }, {
     key: 'post',
     value: function post(url, data, query) {
-      var _this2 = this;
-
-      return new Promise(function (resolve, reject) {
-        var options = {
-          headers: _this2.headers
-        };
-        if (query) {
-          options.query = query;
-        }
-        rest.postJson(url, data, options).on('complete', function (result, response) {
-          if (result instanceof Error) {
-            reject(result.message);
-          } else {
-            if (response.statusCode !== 200) {
-              reject(result);
-            } else {
-              resolve(result);
-            }
-          }
-        });
-      });
+      return fetch(url + getQueryParams(query), {
+        method: 'POST',
+        headers: this.headers,
+        body: JSON.stringify(data)
+      }).then(handleErrors);
     }
   }, {
     key: 'put',
     value: function put(url, data) {
-      var _this3 = this;
-
-      return new Promise(function (resolve, reject) {
-        rest.putJson(url, data, {
-          headers: _this3.headers
-        }).on('complete', function (result, response) {
-          if (result instanceof Error) {
-            reject(result.message);
-          } else {
-            if (response.statusCode !== 200) {
-              reject(result);
-            } else {
-              resolve(result);
-            }
-          }
-        });
-      });
+      return fetch(url, {
+        method: 'PUT',
+        headers: this.headers,
+        body: JSON.stringify(data)
+      }).then(handleErrors);
     }
   }, {
     key: 'del',
     value: function del(url) {
-      var _this4 = this;
-
-      return new Promise(function (resolve, reject) {
-        rest.del(url, {
-          headers: _this4.headers
-        }).on('complete', function (result, response) {
-          if (result instanceof Error) {
-            reject(result.message);
-          } else {
-            if (response.statusCode !== 200) {
-              reject(result);
-            } else {
-              resolve(result);
-            }
-          }
-        });
-      });
+      return fetch(url, {
+        method: 'DELETE',
+        headers: this.headers
+      }).then(handleErrors);
     }
   }, {
     key: 'findById',

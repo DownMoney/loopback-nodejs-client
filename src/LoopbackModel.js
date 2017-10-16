@@ -1,6 +1,19 @@
 "use strict";
 
-const rest = require('restler');
+const fetch = typeof window === 'undefined' ? require('node-fetch') : window.fetch;
+const qs = require('qs');
+
+const handleErrors = (response) => {
+  if (!response.ok) {
+    throw Error(response.statusText);
+  }
+  return response.json();
+};
+
+const getQueryParams = (query) =>
+  query && qs.stringify(query)
+  ? '?' + qs.stringify(query)
+  : '';
 
 class LoopbackModel {
   constructor(model, tokenClient) {
@@ -11,91 +24,34 @@ class LoopbackModel {
   }
 
   get(url, query) {
-    return new Promise((resolve, reject) => {
-      rest.get(url, {
+    return  fetch(url + getQueryParams(query), {
+          method: 'GET',
           headers: this.headers,
-          query: query
         }
-      ).on('complete', function (result, response) {
-        if (result instanceof Error) {
-          reject(result.message);
-
-        } else {
-          if (response.statusCode !== 200) {
-            reject(result)
-          }
-          else {
-            resolve(result);
-          }
-
-        }
-      });
-    });
+      ).then(handleErrors);
   }
 
   post(url, data, query) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        headers: this.headers
-      };
-      if (query) {
-        options.query = query
-      }
-      rest.postJson(url, data, options
-      ).on('complete', function (result, response) {
-        if (result instanceof Error) {
-          reject(result.message);
-        } else {
-          if (response.statusCode !== 200) {
-            reject(result)
-          }
-          else {
-            resolve(result);
-          }
-        }
-      });
-    });
+    return fetch(url + getQueryParams(query), {
+        method: 'POST',
+        headers: this.headers,
+        body: JSON.stringify(data)
+      }).then(handleErrors);
   }
 
   put(url, data) {
-    return new Promise((resolve, reject) => {
-      rest.putJson(url, data, {
-          headers: this.headers
-        }
-      ).on('complete', function (result, response) {
-        if (result instanceof Error) {
-          reject(result.message);
-        } else {
-          if(response.statusCode !== 200) {
-            reject(result)
-          }
-          else {
-            resolve(result);
-          }
-        }
-      });
-
-    });
+    return fetch(url, {
+      method: 'PUT',
+      headers: this.headers,
+      body: JSON.stringify(data)
+    }).then(handleErrors);
   }
 
   del(url) {
-    return new Promise((resolve, reject) => {
-      rest.del(url, {
-          headers: this.headers
-        }
-      ).on('complete', function (result, response) {
-        if (result instanceof Error) {
-          reject(result.message);
-        } else {
-          if (response.statusCode !== 200) {
-            reject(result)
-          }
-          else {
-            resolve(result);
-          }
-        }
-      });
-    });
+    return fetch(url, {
+      method: 'DELETE',
+      headers: this.headers,
+    }).then(handleErrors);
   }
 
   findById(data) {
