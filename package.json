@@ -59,7 +59,6 @@
   "dependencies": {
     "nock": "^9.0.2",
     "node-fetch": "^1.7.3",
-    "qs": "^6.5.1",
-    "restler": "^3.4.0"
+    "qs": "^6.5.1"
   }
 }
